@@ -11,11 +11,11 @@ A simple program for easily pasting multiple times with minimal effort
 - use ':' to execute a command
 
 Commands:
-`$` <id> ... go to the id
-`<` <number> ... go back number amount of items
-`>` <number> ... go forward number amount of items
-`help` | `h` ... print this help message
-`exit` | `quit` | `q` ... exit the program
+- `$` <id> ... go to the id
+- `<` <number> ... go back number amount of items
+- `>` <number> ... go forward number amount of items
+- `help` | `h` ... print this help message
+- `exit` | `quit` | `q` ... exit the program
 
 # Requirements
 - [Python](https://www.python.org/downloads/) (preferably 3.12 -> was written in that version)

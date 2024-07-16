@@ -48,11 +48,33 @@ def on_press(key: kb.Key | kb.KeyCode | None) -> None:
 def handle_cmd(cmd: str) -> bool:
     global copy_iter
 
-    cmd = cmd.lstrip(":").strip()
+    cmd = cmd.lstrip(":").strip().lower()
     if cmd == "":
         return False
 
-    if cmd.startswith(">"):
+    if cmd == "exit" or cmd == "quit" or cmd == "q":
+        print("Aborted!")
+        exit()
+
+    if cmd == "help" or cmd == "h":
+        print("""
+Here is help:
+- use Ctrl+V to paste -> it will automatically advance to the next item
+- the id of the item you currently paste is printed out
+- use Esc to exit when not in command mode
+- use ':' to execute a command
+
+Commands:
+`$` <id> ... go to the id
+`<` <number> ... go back number amount of items
+`>` <number> ... go forward number amount of items
+`help` | `h` ... print this help message
+`exit` | `quit` | `q` ... exit the program
+        """)
+
+        return False
+
+    if cmd.startswith(">") or cmd.startswith("<"):
         skip: int
         try:
             skip = int(cmd[1:].lstrip())
@@ -60,13 +82,23 @@ def handle_cmd(cmd: str) -> bool:
             print("Invalid number")
             return False
         try:
-            item = copy_iter.next(skip)
+            item = copy_iter.next(skip) if cmd.startswith(">") else copy_iter.previous(skip)
             copy_item(item)
+            return True
         except StopIteration:
             print("Exceeded range")
             return False
 
-        return True
+    if cmd.startswith("$"):
+        id = cmd[1:].lstrip()
+
+        try:
+            item = copy_iter.find(id)
+            copy_item(item)
+            return True
+        except ValueError:
+            print("Value could not be found")
+            return False
 
 
 def main() -> None:
@@ -82,12 +114,12 @@ def main() -> None:
         if continue_after_exit:
             flush_input()
             if not handle_cmd(input(":")):
-                copy_item(copy_iter.next())
+                copy_item(copy_iter.current())
             continue
         break
 
 
-copy_iter: DoubleIter = StrListIter(["Hello", "World"])
+copy_iter: DoubleIter = StrListIter(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
 continue_after_exit: bool = False
 FILE_NAME = "input/data.txt"
 

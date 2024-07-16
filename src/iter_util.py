@@ -13,14 +13,35 @@ class DoubleIter(ABC):
 
     @abstractmethod
     def next(self, amount: int = 1) -> IterItem:
+        """
+        moves forwards `amount` items and returns that item
+
+        Raises StopIteration if it would skip past the start
+
+        Raises ValueError if the amount is negative
+        :param amount: how many items to go backwards
+        :return: the item `amount` items before the current one
+        """
         pass
 
     @abstractmethod
-    def previous(self, amount: int = 1):
+    def previous(self, amount: int = 1) -> IterItem:
+        """
+        moves backwards `amount` items and returns that item
+
+        Raises StopIteration if it would skip past the start
+
+        Raises ValueError if the amount is negative
+        :param amount: how many items to go backwards
+        :return: the item `amount` items before the current one
+        """
         pass
 
     @abstractmethod
     def current(self) -> IterItem:
+        """
+        :return: the current item of the iterator
+        """
         pass
 
     def __getitem__(self, item_id: Any) -> IterItem:
@@ -31,6 +52,13 @@ class DoubleIter(ABC):
 
     @abstractmethod
     def find(self, item_id: str) -> IterItem:
+        """
+        Search for the id inside the iterator
+
+        Raises ValueError, if the id is not found
+        :param item_id: the id associated with an item
+        :return: the item tuple if found
+        """
         pass
 
 
@@ -40,8 +68,10 @@ class StrListIter(DoubleIter):
         self.idx: int = -1
 
     def next(self, amount: int = 1) -> IterItem:
+        if amount < 0:
+            raise ValueError("Amount must be greater than or equal to zero")
+
         if self.idx + amount >= len(self.data):
-            self.idx = len(self.data)
             raise StopIteration
 
         self.idx += amount
@@ -49,8 +79,10 @@ class StrListIter(DoubleIter):
         return str(self.idx), self.data[self.idx]
 
     def previous(self, amount: int = 1) -> IterItem:
+        if amount < 0:
+            raise ValueError("Amount must be greater than or equal to zero")
+
         if self.idx - amount < 0:
-            self.idx = -1
             raise StopIteration
 
         self.idx -= amount

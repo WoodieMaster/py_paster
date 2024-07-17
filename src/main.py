@@ -4,7 +4,7 @@ from pynput import keyboard as kb
 from clipboard import copy as copy2clip
 import time
 from typing import Any, Self
-from generator_util import DoubleIter, StrListIter, IterItem
+from iter_util import DoubleIter, StrListIter, IterItem
 
 
 def flush_input():

@@ -5,6 +5,7 @@ from clipboard import copy as copy2clip
 import time
 from typing import Any, Self
 from iter_util import DoubleIter, StrListIter, IterItem
+import sys
 
 
 def flush_input():
@@ -103,6 +104,11 @@ Commands:
 
 def main() -> None:
     global continue_after_exit
+
+    args = sys.argv[1:]
+
+    for arg in args:
+
 
     copy_item(copy_iter.next())
     while True:

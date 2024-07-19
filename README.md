@@ -39,9 +39,9 @@ Every line is
 
 Uses one section as the id, and another for the value ()
 
-- `--id-idx <id_idx>` ... set the section to use for the id 
-- `--value-idx <value_idx>` ... set the section to use for the value
-- (`--seperator` | `--sep` ) `<seperator>` ... set the seperator to use for splitting sections of the
+- `--id-idx <id_idx>` ... set the section to use for the id (default: 0)
+- `--value-idx <value_idx>` ... set the section to use for the value (default: 1)
+- (`--seperator` | `--sep` ) `<seperator>` ... set the seperator to use for splitting the columns (default ';')
 - `--header` ... skip the first line for the header of the csv
 
 ### JSON

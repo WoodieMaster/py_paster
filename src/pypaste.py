@@ -1,11 +1,13 @@
+import os.path
+import time
 import sys
 
 from pynput import keyboard as kb
 from clipboard import copy as copy2clip
-import time
-from typing import Any, Self
-from iter_util import DoubleIter, StrListIter, IterItem
-import sys
+
+from iter_util import DoubleIter, JSONIter, CSVIter, TextIter, IterItem
+from util import error
+from arg_handler import normal_args, value_args, text_params
 
 
 def flush_input():
@@ -97,18 +99,47 @@ Commands:
             item = copy_iter.find(id)
             copy_item(item)
             return True
-        except ValueError:
+        except StopIteration:
             print("Value could not be found")
             return False
 
 
 def main() -> None:
-    global continue_after_exit
+    global continue_after_exit, copy_iter
 
-    args = sys.argv[1:]
+    if len(text_params) == 0:
+        error("No file path given")
+    path = text_params[0]
 
-    for arg in args:
+    if not os.path.exists(path):
+        error(f"Path '{path}' does is not a file'")
 
+    if not os.path.isfile(path):
+        error(f"Path '{path}' does is not a file'")
+
+    fix_format = value_args.get("-f", value_args.get("--format", None))
+
+    match fix_format:
+        case "text":
+            copy_iter = TextIter(path)
+        case "csv":
+            copy_iter = CSVIter(path)
+        case "json":
+            copy_iter = JSONIter(path)
+        case None:
+            match path.rsplit(".", 1)[-1]:
+                case "csv":
+                    copy_iter = CSVIter(path)
+                case "json":
+                    copy_iter = JSONIter(path)
+                case _:
+                    copy_iter = TextIter(path)
+        case _:
+            error("Invalid format\n"
+                  "valid:\n"
+                  "- text\n"
+                  "- csv\n"
+                  "- json")
 
     copy_item(copy_iter.next())
     while True:
@@ -125,9 +156,9 @@ def main() -> None:
         break
 
 
-copy_iter: DoubleIter = StrListIter(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
 continue_after_exit: bool = False
-FILE_NAME = "input/data.txt"
+
+copy_iter: DoubleIter
 
 if __name__ == '__main__':
     main()

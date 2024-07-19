@@ -1,7 +1,10 @@
 from typing import Any, Self
 from abc import ABC, abstractmethod
+from arg_handler import value_args, normal_args
+import csv
 
 type IterItem = tuple[str, str]
+from util import error
 
 
 class DoubleIter(ABC):
@@ -62,35 +65,125 @@ class DoubleIter(ABC):
         pass
 
 
-class StrListIter(DoubleIter):
-    def __init__(self, data: list[str]):
-        self.data: list[str] = data
-        self.idx: int = -1
+class CSVIter(DoubleIter):
+    def __init__(self, filepath: str):
+        try:
+            self._id_idx: int = int(value_args.get("--id-idx", 0))
+        except ValueError:
+            error("Invalid index for --id-idx")
+
+        try:
+            self._value_idx: int = int(value_args.get("--value-idx", 0))
+        except ValueError:
+            error("Invalid index for --value-idx")
+
+        self._header: bool = "--header" in normal_args
+
+        self._seperator: str | None = value_args.get("--sep", value_args.get("--seperator", ";"))
+        if self._seperator is None:
+            self._seperator = ";"
+
+        self._current: tuple[str, str] | None = None
+
+        self._file = open(filepath)
+        self._idx = -1
+        self._new_reader()
 
     def next(self, amount: int = 1) -> IterItem:
-        if amount < 0:
-            raise ValueError("Amount must be greater than or equal to zero")
+        if amount <= 0:
+            raise ValueError("amount must be greater than zero")
 
-        if self.idx + amount >= len(self.data):
+        current_idx = self._idx
+
+        col: list[str]
+        try:
+            for i in range(amount - 1):
+                next(self._reader)
+
+            col = next(self._reader)
+        except StopIteration:
+            self._idx = current_idx
+            self._new_reader()
             raise StopIteration
 
-        self.idx += amount
+        return col[self._id_idx], col[self._value_idx]
 
-        return str(self.idx), self.data[self.idx]
+    def _new_reader(self) -> None:
+        self._reader = csv.reader(self._file, delimiter=self._seperator)
+
+        if self._header:
+            next(self._reader)
+
+        for i in range(self._idx):
+            next(self._reader)
+
+        col = next(self._reader)
+        self._current = col[self._id_idx], col[self._value_idx]
 
     def previous(self, amount: int = 1) -> IterItem:
-        if amount < 0:
-            raise ValueError("Amount must be greater than or equal to zero")
+        if amount <= 0:
+            raise ValueError("amount must be greater than zero")
 
-        if self.idx - amount < 0:
+        new_idx = self._idx - amount
+
+        if new_idx < 0:
             raise StopIteration
 
-        self.idx -= amount
-        return str(self.idx), self.data[self.idx]
-
-    def find(self, item_id: str) -> IterItem:
-        self.idx = self.data.index(item_id)
-        return str(self.idx), self.data[self.idx]
+        self._idx = self
+        self._new_reader()
+        return self._current
 
     def current(self) -> IterItem:
-        return str(self.idx), self.data[self.idx]
+        if self._current is None:
+            raise StopIteration
+
+        return self._current
+
+    def find(self, item_id: str) -> IterItem:
+        current_idx = self._idx
+        self._idx = -1
+        self._new_reader()
+
+        for col in self._reader:
+            self._idx += 1
+            if col[self._id_idx] == item_id:
+                self._current = col[self._id_idx], col[self._value_idx]
+                return self._current
+
+        self._idx = current_idx
+        self._new_reader()
+        raise StopIteration
+
+
+class JSONIter(DoubleIter):
+    def __init__(self, filepath: str):
+        pass
+
+    def next(self, amount: int = 1) -> IterItem:
+        pass
+
+    def previous(self, amount: int = 1) -> IterItem:
+        pass
+
+    def current(self) -> IterItem:
+        pass
+
+    def find(self, item_id: str) -> IterItem:
+        pass
+
+
+class TextIter(DoubleIter):
+    def __init__(self, filepath: str):
+        pass
+
+    def next(self, amount: int = 1) -> IterItem:
+        pass
+
+    def previous(self, amount: int = 1) -> IterItem:
+        pass
+
+    def current(self) -> IterItem:
+        pass
+
+    def find(self, item_id: str) -> IterItem:
+        pass
